@@ -1,0 +1,56 @@
+.left_nav {
+    height: 100%;
+    width: 160px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #333;
+    overflow-x: hidden;
+    padding-top: 20px;
+    size: 30;
+}
+
+.up_site {
+    width: 100%;
+    background-color: #17181c;
+}
+
+.site {
+    height: 100%;
+    width: 100%;
+    background-color: #17181c;
+}
+
+.font {
+    background-color: #17181c;
+    color: #ffffff;
+}
+
+.in_back {
+    background-color: #333;
+}
+
+.btn {
+    background-color: #926bd1;
+    color: white;
+    width: 185px;
+    size: 24;
+}
+
+li {
+    list-style-type: none;
+}
+
+ul {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+caption {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+    color: #6c757d;
+    text-align: center;
+    caption-side: top;
+}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% for test in tests %}
+      {% for test in tests %}
+        <a href="/tests/{{ test.id }}">{{ test.name }}</a>
+    {% endfor %}
+  {% endfor %}
+{% endblock %}
