@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from wtforms import StringField, TextAreaField, IntegerField, FormField
 
@@ -6,8 +6,7 @@ from data.users import User
 from data.test import Tests
 from data import db_session
 from forms.user import LoginForm, RegisterForm
-from forms.news import TestForm, TestAnswers, Answers
-
+from forms.news import TestForm, TestAnswers, Answers, TestNameSubmit
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.config["SECRET_KEY"] = "yandexlyceum_secret_key"
 login_manager = LoginManager()
@@ -62,7 +61,7 @@ def login():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
-        if user and user.check_password(form.password.data):
+        if user and user.check_password(password=form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
         return render_template("login.html",
@@ -77,6 +76,7 @@ def my_tests():
     db_sess = db_session.create_session()
     my_tests = db_sess.query(Tests).filter(Tests.author_id == current_user.id).all()
     return render_template("my_tests.html", tests=my_tests, title="Мои тесты")
+
 
 @app.route("/")
 def index():
@@ -107,6 +107,7 @@ def create_test():
             db_sess = db_session.create_session()
             test = Tests()
             test.title = form.name.data
+            test.content = form.description.data
             test.questions = st
             test.author_id = current_user.get_id()
             test.result = st2
@@ -118,7 +119,6 @@ def create_test():
                                                       Tests.author_id == current_user.get_id(),
                                                       Tests.result == st2).first()
             db_sess.commit()
-
             return redirect('/')
 
     if form.data['submit_con']:
@@ -149,6 +149,138 @@ def create_test():
                 form.questions.entries[i].form.scores.pop_entry()
 
     return render_template("test_create.html", num=num, form=form, title="Создание теста")
+
+
+@app.route('/tests/<int:num>', methods=['GET', 'POST'])
+def run_news(num):
+    score = 0
+    num_of_question = 0
+    if request.args.get('score'):
+        score = int(request.args.get('score'))
+    if request.args.get('question'):
+        num_of_question = int(request.args.get('question'))
+    form = TestAnswers()
+    if form.data['submit'] and form.data['answers']:
+        score += int(form.data['answers'])
+        num_of_question += 1
+        return redirect('/tests/{}?score={}&question={}'.format(num, str(score), str(num_of_question)))
+    db_sess = db_session.create_session()
+    all_values = db_sess.query(Tests).filter(Tests.id == num).first()
+    title = all_values.title
+    cycle = 0
+    question = ''
+    answers = []
+    scores = []
+    parsed_quest = all_values.questions.split(';')
+    del parsed_quest[-1]
+    num_q = len(list(filter(lambda x: x[0] != '$' and x[0] != '%', parsed_quest)))
+    if num_q <= num_of_question:
+        s = score
+        TestAnswers.sp = []
+        return redirect('/tests/{}/finish/{}'.format(num, s))
+    else:
+        for i in range(len(parsed_quest)):
+            if parsed_quest[i][0] == '%':
+                if cycle - 1 == num_of_question:
+                    answers.append(parsed_quest[i][1::])
+            elif parsed_quest[i][0] == '$':
+                if cycle - 1 == num_of_question:
+                    scores.append(parsed_quest[i][1::])
+            else:
+                cycle += 1
+                if cycle - 1 == num_of_question:
+                    question = parsed_quest[i]
+            if cycle > num_of_question + 1:
+                break
+        for i in range(len(answers)):
+            form.answers.choices.append((int(scores[i]), answers[i]))
+        return render_template('run_test.html', title=title, num=num_of_question + 1, form=form, question=question)
+
+
+@app.route("/tests/<int:num>/finish/<int:score>")
+def finish_test(num, score):
+    sum_ans = score
+    db_sess = db_session.create_session()
+    all_results = db_sess.query(Tests).filter(Tests.id == num).first()
+    parsed_res = all_results.result.split(';')
+    test_result = ''
+    results = []
+    scrs = []
+    for i in range(len(parsed_res)):
+        if parsed_res[i][0] == '&':
+            results.append(parsed_res[i][1::])
+        else:
+            scrs.append(parsed_res[i].split('-'))
+    for i in range(len(scrs)):
+        if int(scrs[i][0]) <= sum_ans <= int(scrs[i][1]):
+            test_result = results[i]
+
+    return render_template('test_end.html', test_result=test_result)
+
+
+@app.route("/tests/view/<int:num>", methods=['GET', 'POST'])
+def view_test(num):
+    crashed = 0
+    test_id = 0
+    content = "К сожалению, описания нет :("
+    author_id = 0
+    creation_date = 0
+    title = 0
+    try:
+        content = ''
+        form = TestForm()
+        db_sess = db_session.create_session()
+        needed_test = db_sess.query(Tests).filter(Tests.id == num).first()
+        title = needed_test.title
+        test_id = needed_test.id
+        author_id = needed_test.author_id
+        creation_date = needed_test.created_date
+        if needed_test.content:
+            content = needed_test.content
+        if form.data['run_test']:
+            return redirect('/tests/{}?score={}&question={}'.format(test_id, '0', '0'))
+    except Exception as e:
+        crashed = 1
+    return render_template('test.html', name=title, content=content, id_t=test_id, user_id=author_id,
+                       date=creation_date,
+                       crashed=crashed, form=form)
+
+
+@app.route("/search_by_name", methods=['GET', 'POST'])
+def search_by_name():
+    form = TestNameSubmit()
+    form_valid = form.validate_on_submit()
+    db_sess = db_session.create_session()
+    if form_valid:
+        try:
+            needed_test = db_sess.query(Tests.id).filter(Tests.title == form.ar_name.data).first()
+            for i in needed_test:
+                name = i
+            test_url = "/tests/view" + str(name)
+            return redirect(test_url)
+        except Exception:
+            return redirect("/")
+    return render_template("search_by_name.html", form=form)
+
+
+
+@app.route("/search")
+def search():
+    return render_template("search.html")
+
+
+
+@app.route("/users/<int:num>")
+def view_user(num):
+    pass
+
+
+@app.route("/profile")
+@login_required
+def profile():
+    pass
+
+
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Создание теста</h1>
+<h1 align="center">Создание теста</h1>
 <form action="" method="post">
     {{ form.hidden_tag() }}
     <div>
@@ -9,6 +9,16 @@
         <br>
         {{ form.name(class="form-control") }}<br>
         {% for error in form.name.errors %}
+            <p class="alert alert-danger" role="alert">
+                {{ error }}
+            </p>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.description.label }}
+        <br>
+        {{ form.description(class="form-control") }}<br>
+        {% for error in form.description.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
@@ -70,7 +80,7 @@
                     <br>
                 {% elif 3 < loop.index < 6 %}
                     <div class="row">
-                        {{ it(type="submit", class="btn") }}
+                        {{ it(type="submit", class="btn text-light") }}
                         {% for error in it.errors %}
                             <p class="alert alert-danger" role="alert">
                                 {{ error }}
@@ -86,8 +96,8 @@
     </div>
     <br>
     <p>
-            {{ form.submit_con(type="submit", class="btn") }}
-        {{ form.del_con(type="submit", class="btn") }}
+            {{ form.submit_con(type="submit", class="btn text-light") }}
+        {{ form.del_con(type="submit", class="btn text-light") }}
     </p>
     <p>
 
@@ -130,13 +140,13 @@
             </div>
         </div>
         <p>
-            {{ form.add_res(type="submit", class="btn") }}
-            {{ form.del_res(type="submit", class="btn") }}
+            {{ form.add_res(type="submit", class="btn text-light") }}
+            {{ form.del_res(type="submit", class="btn text-light") }}
         </p>
     </div>
     <br>
     <p>
-        {{ form.submit(type="submit", class="btn") }}
+        {{ form.submit(type="submit", class="btn text-light") }}
     </p>
 </form>
 

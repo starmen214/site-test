@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for test in tests %}
-        <a href="/tests/{{ test.id }}">{{ test.name }}</a>
-    {% endfor %}
+    <h1 align="center" class="text-light">Все доступные тесты:</h1>
+    <div class="container">
+        <a class="btn btn-info outline-light text-light mb-5" href="/search">Найти конкретный тест</a>
+    </div>
+    <div class="container">
+        {% for test in tests %}
+            <div class="card" style="width: 18rem; background: #6c757d">
+                <div class="card-body">
+                    <h5 class="card-title text-light">Тест "{{ test.title }}"</h5>
+                    <a href="/tests/view/{{ test.id }}" class="card-link text-light">К тесту</a>
+                    <a href="/users/{{ test.author_id }}" class="card-link text-light">К странице автора</a>
+                </div>
+                <br>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

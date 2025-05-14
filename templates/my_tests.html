@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% for test in tests %}
-      {% for test in tests %}
-        <a href="/tests/{{ test.id }}">{{ test.name }}</a>
+    <h1 align="center" class="text-light">Все доступные тесты:</h1>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <button onclick="fetch(`?name=${document.getElementById('search1').textContent}`)"><span class="input-group-text btn" id="search">Найти</span></button>
+        </div>
+        <input type="text" class="form-control" placeholder="Название теста" aria-label="Название теста" aria-describedby="basic-addon1" id="search1">
+    </div>
+    {% for test in tests %}
+        <div class="card" style="width: 18rem; background: #6c757d">
+            <div class="card-body">
+                <h5 class="card-title text-light">Тест "{{ test.title }}"</h5>
+                <a href="/tests/view/{{ test.id }}" class="card-link text-light">К тесту</a>
+                <a href="/users/{{ test.author_id }}" class="card-link text-light">К странице автора</a>
+            </div>
+            <br>
+        </div>
     {% endfor %}
-  {% endfor %}
 {% endblock %}

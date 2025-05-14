@@ -23,31 +23,25 @@ class TestForm(FlaskForm):
     add_res = SubmitField("Создать результат")
     del_res = SubmitField("Удалить результат")
     submit = SubmitField("Сохранить тест")
-    #run_test = SubmitField("Пройти тест")
+    run_test = SubmitField("Пройти тест")
     add_picture = SubmitField("Добавить изображение")
     but_answer = SubmitField("Выбрать")
-    #tags = TextAreaField("Теги (через ; без пробелов)")
 
 
-class Account_submit(FlaskForm):
+class AccountSubmit(FlaskForm):
     ac_id = IntegerField("Введите id аккаунта")
     ac_name = TextAreaField("Введите имя аккаунта")
     submit = SubmitField("Найти аккаунт")
 
 
-class Test_id(FlaskForm):
+class TestId(FlaskForm):
     ar_id = IntegerField("Введите id теста")
-    submit = SubmitField("Найти аккаунт")
+    submit = SubmitField("Найти тест")
 
 
-class Test_name_submit(FlaskForm):
-    ar_name = TextAreaField("Введите имя теста")
-    submit = SubmitField("Найти аккаунт")
-
-
-class Test_teggs_submit(FlaskForm):
-    ar_teggs = TextAreaField("Введите  тегги теста")
-    submit = SubmitField("Найти аккаунт")
+class TestNameSubmit(FlaskForm):
+    ar_name = TextAreaField("Введите название теста")
+    submit = SubmitField("Найти тест")
 
 
 class TestAnswers(FlaskForm):
