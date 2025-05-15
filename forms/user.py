@@ -7,6 +7,7 @@ class RegisterForm(flask_wtf.FlaskForm):
     password = wtforms.PasswordField('Пароль', validators=[wtforms.validators.DataRequired()])
     password_again = wtforms.PasswordField('Повторите пароль', validators=[wtforms.validators.DataRequired()])
     name = wtforms.StringField('Имя пользователя', validators=[wtforms.validators.DataRequired()])
+    detail = wtforms.TextAreaField('Детальнее о вас')
     submit = wtforms.SubmitField('Войти')
 
 

@@ -12,6 +12,7 @@ class User(SqlAlchemyBase, UserMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer,
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    detail = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime,
@@ -20,7 +21,7 @@ class User(SqlAlchemyBase, UserMixin):
     admin = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True, default=False)
 
     def __repr__(self):
-        sp = [self.id, self.name, self.email, self.created_date, self.admin]
+        sp = [self.id, self.name, self.detail, self.email, self.created_date, self.admin]
         return ' '.join(list(map(str, sp)))
 
     def set_password(self, password):

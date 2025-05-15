@@ -6,7 +6,8 @@ from data.users import User
 from data.test import Tests
 from data import db_session
 from forms.user import LoginForm, RegisterForm
-from forms.news import TestForm, TestAnswers, Answers, TestNameSubmit
+from forms.tests import TestForm, TestAnswers, Answers, TestNameSubmit, TestId
+
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.config["SECRET_KEY"] = "yandexlyceum_secret_key"
 login_manager = LoginManager()
@@ -14,7 +15,7 @@ login_manager.init_app(app)
 
 
 def main():
-    db_session.global_init("db/blogs.db")
+    db_session.global_init("db/tests.db")
     app.run()
 
 
@@ -92,17 +93,17 @@ def create_test():
     count_conditions = []
     num = len(count_conditions) + 1
     if form.validate_on_submit():
-        if form.data['submit']:
+        if form.data["submit"]:
             st = ''
             for i in range(len(form.questions.data)):
-                st += form.questions.data[i]['content'] + ';'
-                for j in range(len(form.questions.data[i]['answer'])):
-                    st += '%' + form.questions.data[i]['answer'][j] + ';'
-                    st += '$' + str(form.questions.data[i]['scores'][j]) + ';'
+                st += form.questions.data[i]["content"] + ";"
+                for j in range(len(form.questions.data[i]["answer"])):
+                    st += "%" + form.questions.data[i]["answer"][j] + ";"
+                    st += "$" + str(form.questions.data[i]["scores"][j]) + ";"
             sp2 = []
             for i in range(len(form.res_point.data)):
-                sp2.append('{}-{};&{}'.format(form.res_point.data[i], form.res_point_max.data[i], form.result.data[i]))
-            st2 = ';'.join(sp2)
+                sp2.append("{}-{};&{}".format(form.res_point.data[i], form.res_point_max.data[i], form.result.data[i]))
+            st2 = ";".join(sp2)
 
             db_sess = db_session.create_session()
             test = Tests()
@@ -119,51 +120,51 @@ def create_test():
                                                       Tests.author_id == current_user.get_id(),
                                                       Tests.result == st2).first()
             db_sess.commit()
-            return redirect('/')
+            return redirect("/")
 
-    if form.data['submit_con']:
+    if form.data["submit_con"]:
         form.questions.append_entry(FormField(Answers))
-    elif form.data['del_con']:
+    elif form.data["del_con"]:
         if len(form.questions) > 1:
             form.questions.pop_entry()
-    elif form.data['add_res']:
+    elif form.data["add_res"]:
         form.res_point.append_entry(IntegerField("Больше стольки очков"))
         form.res_point_max.append_entry(IntegerField("Больше стольки очков"))
         form.result.append_entry(TextAreaField("Результат"))
         form.result.entries[-1].data = None
-    elif form.data['del_res']:
+    elif form.data["del_res"]:
         if len(form.res_point) > 1:
             form.res_point.pop_entry()
             form.res_point_max.pop_entry()
             form.result.pop_entry()
     else:
         for i in range(len(form.questions.entries)):
-            if form.questions.entries[i].data['add_answer']:
-                form.questions.entries[i].form.answer.append_entry(StringField('ответ'))
+            if form.questions.entries[i].data["add_answer"]:
+                form.questions.entries[i].form.answer.append_entry(StringField("ответ"))
                 form.questions.entries[i].form.answer.entries[-1].data = None
 
                 form.questions.entries[i].form.scores.append_entry(IntegerField("Количество баллов"))
                 form.questions.entries[i].form.scores.entries[-1].data = None
-            elif form.questions.entries[i].data['del_answer']:
+            elif form.questions.entries[i].data["del_answer"]:
                 form.questions.entries[i].form.answer.pop_entry()
                 form.questions.entries[i].form.scores.pop_entry()
 
     return render_template("test_create.html", num=num, form=form, title="Создание теста")
 
 
-@app.route('/tests/<int:num>', methods=['GET', 'POST'])
+@app.route("/tests/<int:num>", methods=["GET", "POST"])
 def run_news(num):
     score = 0
     num_of_question = 0
-    if request.args.get('score'):
-        score = int(request.args.get('score'))
-    if request.args.get('question'):
-        num_of_question = int(request.args.get('question'))
+    if request.args.get("score"):
+        score = int(request.args.get("score"))
+    if request.args.get("question"):
+        num_of_question = int(request.args.get("question"))
     form = TestAnswers()
-    if form.data['submit'] and form.data['answers']:
-        score += int(form.data['answers'])
+    if form.data["submit"] and form.data["answers"]:
+        score += int(form.data["answers"])
         num_of_question += 1
-        return redirect('/tests/{}?score={}&question={}'.format(num, str(score), str(num_of_question)))
+        return redirect("/tests/{}?score={}&question={}".format(num, str(score), str(num_of_question)))
     db_sess = db_session.create_session()
     all_values = db_sess.query(Tests).filter(Tests.id == num).first()
     title = all_values.title
@@ -171,19 +172,19 @@ def run_news(num):
     question = ''
     answers = []
     scores = []
-    parsed_quest = all_values.questions.split(';')
+    parsed_quest = all_values.questions.split(";")
     del parsed_quest[-1]
-    num_q = len(list(filter(lambda x: x[0] != '$' and x[0] != '%', parsed_quest)))
+    num_q = len(list(filter(lambda x: x[0] != "$" and x[0] != "%", parsed_quest)))
     if num_q <= num_of_question:
         s = score
         TestAnswers.sp = []
-        return redirect('/tests/{}/finish/{}'.format(num, s))
+        return redirect("/tests/{}/finish/{}".format(num, s))
     else:
         for i in range(len(parsed_quest)):
-            if parsed_quest[i][0] == '%':
+            if parsed_quest[i][0] == "%":
                 if cycle - 1 == num_of_question:
                     answers.append(parsed_quest[i][1::])
-            elif parsed_quest[i][0] == '$':
+            elif parsed_quest[i][0] == "$":
                 if cycle - 1 == num_of_question:
                     scores.append(parsed_quest[i][1::])
             else:
@@ -194,7 +195,8 @@ def run_news(num):
                 break
         for i in range(len(answers)):
             form.answers.choices.append((int(scores[i]), answers[i]))
-        return render_template('run_test.html', title=title, num=num_of_question + 1, form=form, question=question)
+        return render_template(
+            "run_test.html", title=title, num=num_of_question + 1, form=form, question=question)
 
 
 @app.route("/tests/<int:num>/finish/<int:score>")
@@ -202,23 +204,23 @@ def finish_test(num, score):
     sum_ans = score
     db_sess = db_session.create_session()
     all_results = db_sess.query(Tests).filter(Tests.id == num).first()
-    parsed_res = all_results.result.split(';')
+    parsed_res = all_results.result.split(";")
     test_result = ''
     results = []
     scrs = []
     for i in range(len(parsed_res)):
-        if parsed_res[i][0] == '&':
+        if parsed_res[i][0] == "&":
             results.append(parsed_res[i][1::])
         else:
-            scrs.append(parsed_res[i].split('-'))
+            scrs.append(parsed_res[i].split("-"))
     for i in range(len(scrs)):
         if int(scrs[i][0]) <= sum_ans <= int(scrs[i][1]):
             test_result = results[i]
 
-    return render_template('test_end.html', test_result=test_result)
+    return render_template("test_end.html", test_result=test_result)
 
 
-@app.route("/tests/view/<int:num>", methods=['GET', 'POST'])
+@app.route("/tests/view/<int:num>", methods=["GET", "POST"])
 def view_test(num):
     crashed = 0
     test_id = 0
@@ -237,16 +239,16 @@ def view_test(num):
         creation_date = needed_test.created_date
         if needed_test.content:
             content = needed_test.content
-        if form.data['run_test']:
-            return redirect('/tests/{}?score={}&question={}'.format(test_id, '0', '0'))
+        if form.data["run_test"]:
+            return redirect("/tests/{}?score={}&question={}".format(test_id, "0", "0"))
     except Exception as e:
         crashed = 1
-    return render_template('test.html', name=title, content=content, id_t=test_id, user_id=author_id,
-                       date=creation_date,
-                       crashed=crashed, form=form)
+    return render_template("test.html", name=title, content=content, id_t=test_id, user_id=author_id,
+                           date=creation_date,
+                           crashed=crashed, form=form)
 
 
-@app.route("/search_by_name", methods=['GET', 'POST'])
+@app.route("/search_by_name", methods=["GET", "POST"])
 def search_by_name():
     form = TestNameSubmit()
     form_valid = form.validate_on_submit()
@@ -256,12 +258,21 @@ def search_by_name():
             needed_test = db_sess.query(Tests.id).filter(Tests.title == form.ar_name.data).first()
             for i in needed_test:
                 name = i
-            test_url = "/tests/view" + str(name)
+            test_url = "/tests/view/" + str(name)
             return redirect(test_url)
         except Exception:
             return redirect("/")
     return render_template("search_by_name.html", form=form)
 
+
+@app.route("/search_by_id", methods=["GET", "POST"])
+def search_by_id():
+    form = TestId()
+    is_valid = form.validate_on_submit()
+    if is_valid:
+        needed_test = "/tests/view/" + str(form.ar_id.data)
+        return redirect(needed_test)
+    return render_template("search_by_id.html", form=form)
 
 
 @app.route("/search")
@@ -269,18 +280,22 @@ def search():
     return render_template("search.html")
 
 
-
 @app.route("/users/<int:num>")
 def view_user(num):
-    pass
+    db_sess = db_session.create_session()
+    needed_user = db_sess.query(User).filter(User.id == num).first()
+    users_test = None
+    found = False
+    if needed_user:
+        found = True
+        users_test = db_sess.query(Tests).filter(Tests.author_id == needed_user.id).all()
+    return render_template("user_detail.html", user=needed_user, tests=users_test, found=found)
 
 
 @app.route("/profile")
 @login_required
 def profile():
-    pass
-
-
+    return render_template("profile.html")
 
 
 if __name__ == "__main__":
