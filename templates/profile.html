@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 align="center" class="text-light">Ваш профиль</h2>
+
+<p align="center" class="text-light">Ваше имя: {{ current_user.name }}</p>
+<p align="center" class="text-light">Ваш email: {{ current_user.email }}</p>
+{% if current_user.detail %}
+    <p align="center" class="text-light">Подробнее о вас: {{ current_user.detail }}</p>
+{% else %}
+    <p align="center" class="text-light">Вы не указали деталей о себе :(</p>
+{% endif %}
+<br>
+<h2 align="center" class="text-light">Ваши тесты:</h2><br>
+{% for test in current_user.tests %}
+    <div class="card" style="width: 18rem; background: #6c757d">
+        <div class="card-body">
+            <h5 class="card-title text-light">Тест "{{ test.title }}"</h5>
+            <a href="/tests/view/{{ test.id }}" class="card-link text-light">К тесту</a>
+            <a href="/users/{{ test.author_id }}" class="card-link text-light">К странице автора</a>
+        </div>
+        <br>
+    </div>
+{% endfor %}
+{% endblock %}

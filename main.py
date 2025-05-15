@@ -1,21 +1,28 @@
 from flask import Flask, render_template, redirect, request
+from flask_admin import Admin
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from wtforms import StringField, TextAreaField, IntegerField, FormField
 
+from admin.tests import TestAdminView
+from admin.users import UserAdminView
 from data.users import User
-from data.test import Tests
+from data.tests import Tests
 from data import db_session
-from forms.user import LoginForm, RegisterForm
+from forms.users import LoginForm, RegisterForm
 from forms.tests import TestForm, TestAnswers, Answers, TestNameSubmit, TestId
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.config["SECRET_KEY"] = "yandexlyceum_secret_key"
+admin = Admin(app, name='testing', template_mode='bootstrap3')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 
 def main():
     db_session.global_init("db/tests.db")
+    db_sess = db_session.create_session()
+    admin.add_view(UserAdminView(User, db_sess))
+    admin.add_view(TestAdminView(Tests, db_sess))
     app.run()
 
 
@@ -102,7 +109,8 @@ def create_test():
                     st += "$" + str(form.questions.data[i]["scores"][j]) + ";"
             sp2 = []
             for i in range(len(form.res_point.data)):
-                sp2.append("{}-{};&{}".format(form.res_point.data[i], form.res_point_max.data[i], form.result.data[i]))
+                sp2.append("{}-{};&{}".format(
+                    form.res_point.data[i], form.res_point_max.data[i], form.result.data[i]))
             st2 = ";".join(sp2)
 
             db_sess = db_session.create_session()
@@ -150,6 +158,18 @@ def create_test():
                 form.questions.entries[i].form.scores.pop_entry()
 
     return render_template("test_create.html", num=num, form=form, title="Создание теста")
+
+
+@app.errorhandler(404)
+def page_not_found(exception):
+    page_user_asking_for = request.base_url.split('/')[-1]
+    return render_template("404.html", page=page_user_asking_for), 404
+
+
+@app.errorhandler(401)
+def unauthorized(exception):
+    page_user_asking_for = request.base_url.split('/')[-1]
+    return render_template("401.html", page=page_user_asking_for), 401
 
 
 @app.route("/tests/<int:num>", methods=["GET", "POST"])

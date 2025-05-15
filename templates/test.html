@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    {% if crashed == 0 %}
+        <h1 align="center">{{ title }}</h1>
+        <p>Описание: {{ content }}</p>
+        <p>ID теста: {{id_t}}</p>
+        <p>ID автора: {{ author_id }}</p>
+        <p>Дата создания: {{ date }}</p>
+        <br>
+        <br>
+        {{ form.run_test(type="submit", class="btn text-light") }}
+    {% else %}
+        <br>
+        <br>
+        <h4 align="middle">Данного теста не существует</h4>
+    {% endif %}
+</form>
+{% endblock %}

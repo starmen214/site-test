@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <h3 align="middle">Тест "{{ title }}"</h3>
+    <br>
+    <br>
+    <h4 style="">Вопрос: {{ num }}</h4>
+    <p>{{question}}</p>
+    <br>
+    <div class="container">
+        {{ form.answers }}
+        <br/>
+        {{ form.submit(type="submit", class="btn text-light") }}
+    </div>
+</form>
+{% endblock %}
